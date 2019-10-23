@@ -20,7 +20,7 @@ public class ApiClientInstance {
 
     public ApiClientInstance() {
 
-        OkHttpClient httpClient = new OkHttpClient();
+        /*OkHttpClient httpClient = new OkHttpClient();
         httpClient.networkInterceptors().add(new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
@@ -29,11 +29,10 @@ public class ApiClientInstance {
                 requestBuilder.header("YumaSession",SESSION_ID);
                 return chain.proceed(requestBuilder.build());
             }
-        });
+        });*/
 
         retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
-                .client(httpClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
