@@ -68,7 +68,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
     private RetrofitInterface retrofitInterface;
     private final String CONTENT_TYPE = "application/json";
-    private String SESSION_ID = "73e2f077-042a-4b03-8248-d1c6b47d691e";
+    private final String SESSION_ID = "73e2f077-042a-4b03-8248-d1c6b47d691e";
 
     private final Handler handler = new Handler();
     private Runnable runnable;
@@ -115,6 +115,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             }
         });
 
+        //getVehicleLocationData(myLatLng,heading,speed,location_name);
+
         currentLocationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -129,7 +131,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     public void onResume() {
         handler.postDelayed(runnable = new Runnable() {
             public void run() {
-                //getVehicleLocationData(myLatLng, heading, speed, location_name);
+                getVehicleLocationData(myLatLng, heading, speed, location_name);
                 handler.postDelayed(runnable, delay_time);
             }
         }, delay_time);
@@ -175,7 +177,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private void getVehicleLocationData(LatLng myLatLng, double heading, double speed, String location_name) {
         retrofitInterface = new ApiClientInstance().getInstance().getApiData();
 
-        Call<ArrayList<Vehicle>> call = retrofitInterface.getVehicleLocationData(CONTENT_TYPE, SESSION_ID, myLatLng.latitude, myLatLng.longitude, heading, speed, location_name);
+        Call<ArrayList<Vehicle>> call = retrofitInterface.getVehicleLocationData(CONTENT_TYPE, SESSION_ID /*, myLatLng.latitude, myLatLng.longitude, heading, speed, location_name*/);
         call.enqueue(new Callback<ArrayList<Vehicle>>() {
             @Override
             public void onResponse(Call<ArrayList<Vehicle>> call, Response<ArrayList<Vehicle>> response) {
@@ -184,26 +186,28 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                     int listSize = vehicleList.size();
                     int i = 0;
                     while (i < listSize) {
+                        gMap.clear();
                         Vehicle currentVehicle = vehicleList.get(i);
-                        //LatLng vehicleLatLng = new LatLng(Double.parseDouble(currentVehicle.getLat()), Double.parseDouble(currentVehicle.getLon()));
-                        //gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(vehicleLatLng, 15));
-                        //gMap.addMarker(new MarkerOptions()
-                                //.position(vehicleLatLng)
-                                //.title(currentVehicle.getLocationName())
-                                //.rotation(currentVehicle.getHeading())
-                                //.snippet(currentVehicle.getDescription()));
-                        //lastActiveTV.setText(currentVehicle.getLastTimestamp());
-                        //descriptionTV.setText(currentVehicle.getDescription());
-                        //speedTV.setText(currentVehicle.getSpeed());
-                        //engineTV.setText(currentVehicle.getEngine().toString());
-                        //gsmTV.setText(currentVehicle.getGsmSignal().toString());
-                        //gpsStatusTV.setText(currentVehicle.getGpsSignal().toString());
-                        //gpsStatusTV.setText(currentVehicle.getGpsSattelites().toString());
-                        //setLocationAddress = getAddress(Double.parseDouble(currentVehicle.getLat()), Double.parseDouble(currentVehicle.getLon()));
-                        //locationNameTV.setText(currentVehicle.getLocationName());
+                        LatLng vehicleLatLng = new LatLng(Double.parseDouble(currentVehicle.getLat()), Double.parseDouble(currentVehicle.getLon()));
+                        gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(vehicleLatLng, 15));
+                        gMap.addMarker(new MarkerOptions()
+                                .position(vehicleLatLng)
+                                .title(currentVehicle.getDescription())
+                                .rotation(currentVehicle.getHeading()));
+                        lastActiveTV.setText(currentVehicle.getLast_timestamp());
+                        descriptionTV.setText(currentVehicle.getDescription());
+                        locationNameTV.setText(currentVehicle.getLocation_name());
+                        speedTV.setText(currentVehicle.getSpeed());
+                        engineTV.setText(String.valueOf(currentVehicle.getEngine()));
+                        gsmTV.setText(String.valueOf(currentVehicle.getGsm_signal()));
+                        gpsStatusTV.setText(String.valueOf(currentVehicle.getGps_signal()));
+                        gpsStatusTV.setText(String.valueOf(currentVehicle.getGps_sattelites()));
+                        setLocationAddress = getAddress(Double.parseDouble(currentVehicle.getLat()), Double.parseDouble(currentVehicle.getLon()));
 
+                        i++;
                     }
-                } else {
+                }
+                else {
                     Toast.makeText(getContext(), "Data parsing problem", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -270,6 +274,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         currentLocationFAB = view.findViewById(R.id.currentLocationFAB);
         carMarker = view.findViewById(R.id.carMarkerIV);
         lastActiveTV = view.findViewById(R.id.vehicle_last_active);
+        locationNameTV = view.findViewById(R.id.locationNameTV);
         descriptionTV = view.findViewById(R.id.vehicle_description);
         speedTV = view.findViewById(R.id.speedTV);
         engineTV = view.findViewById(R.id.engineStatusTV);

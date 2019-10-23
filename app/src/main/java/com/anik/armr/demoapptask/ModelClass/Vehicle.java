@@ -1,42 +1,41 @@
 package com.anik.armr.demoapptask.ModelClass;
 
 public class Vehicle {
-    private String userId;
+    private String user_id;
     private String timestamp;
-    private String lastTimestamp;
+    private String last_timestamp;
     private String lon;
     private String lat;
     private String speed;
-    private Integer heading;
+    private float heading;
     private String distance;
-    private String deviceId;
-    private String locationName;
+    private String device_id;
+    private String location_name;
     private String description;
     private String icon;
-    private Integer engine;
-    private Integer door;
-    private Integer online;
-    private Integer fuel;
-    private Integer temperature;
-    private Integer gsmSignal;
-    private Integer gpsSattelites;
-    private Integer gpsSignal;
-    private Boolean gpsPositioning;
+    private float engine;
+    private float door;
+    private float online;
+    private float fuel;
+    private float temperature;
+    private float gsm_signal;
+    private float gps_sattelites;
+    private float gps_signal;
 
     public Vehicle() {
     }
 
-    public Vehicle(String userId, String timestamp, String lastTimestamp, String lon, String lat, String speed, Integer heading, String distance, String deviceId, String locationName, String description, String icon, Integer engine, Integer door, Integer online, Integer fuel, Integer temperature, Integer gsmSignal, Integer gpsSattelites, Integer gpsSignal, Boolean gpsPositioning) {
-        this.userId = userId;
+    public Vehicle(String user_id, String timestamp, String last_timestamp, String lon, String lat, String speed, float heading, String distance, String device_id, String location_name, String description, String icon, float engine, float door, float online, float fuel, float temperature, float gsm_signal, float gps_sattelites, float gps_signal) {
+        this.user_id = user_id;
         this.timestamp = timestamp;
-        this.lastTimestamp = lastTimestamp;
+        this.last_timestamp = last_timestamp;
         this.lon = lon;
         this.lat = lat;
         this.speed = speed;
         this.heading = heading;
         this.distance = distance;
-        this.deviceId = deviceId;
-        this.locationName = locationName;
+        this.device_id = device_id;
+        this.location_name = location_name;
         this.description = description;
         this.icon = icon;
         this.engine = engine;
@@ -44,22 +43,22 @@ public class Vehicle {
         this.online = online;
         this.fuel = fuel;
         this.temperature = temperature;
-        this.gsmSignal = gsmSignal;
-        this.gpsSattelites = gpsSattelites;
-        this.gpsSignal = gpsSignal;
-        this.gpsPositioning = gpsPositioning;
+        this.gsm_signal = gsm_signal;
+        this.gps_sattelites = gps_sattelites;
+        this.gps_signal = gps_signal;
     }
 
-    public String getUserId() {
-        return userId;
+
+    public String getUser_id() {
+        return user_id;
     }
 
     public String getTimestamp() {
         return timestamp;
     }
 
-    public String getLastTimestamp() {
-        return lastTimestamp;
+    public String getLast_timestamp() {
+        return last_timestamp;
     }
 
     public String getLon() {
@@ -74,7 +73,7 @@ public class Vehicle {
         return speed;
     }
 
-    public Integer getHeading() {
+    public float getHeading() {
         return heading;
     }
 
@@ -82,12 +81,12 @@ public class Vehicle {
         return distance;
     }
 
-    public String getDeviceId() {
-        return deviceId;
+    public String getDevice_id() {
+        return device_id;
     }
 
-    public String getLocationName() {
-        return locationName;
+    public String getLocation_name() {
+        return location_name;
     }
 
     public String getDescription() {
@@ -98,39 +97,35 @@ public class Vehicle {
         return icon;
     }
 
-    public Integer getEngine() {
+    public float getEngine() {
         return engine;
     }
 
-    public Integer getDoor() {
+    public float getDoor() {
         return door;
     }
 
-    public Integer getOnline() {
+    public float getOnline() {
         return online;
     }
 
-    public Integer getFuel() {
+    public float getFuel() {
         return fuel;
     }
 
-    public Integer getTemperature() {
+    public float getTemperature() {
         return temperature;
     }
 
-    public Integer getGsmSignal() {
-        return gsmSignal;
+    public float getGsm_signal() {
+        return gsm_signal;
     }
 
-    public Integer getGpsSattelites() {
-        return gpsSattelites;
+    public float getGps_sattelites() {
+        return gps_sattelites;
     }
 
-    public Integer getGpsSignal() {
-        return gpsSignal;
-    }
-
-    public Boolean getGpsPositioning() {
-        return gpsPositioning;
+    public float getGps_signal() {
+        return gps_signal;
     }
 }

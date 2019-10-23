@@ -17,12 +17,12 @@ public interface RetrofitInterface {
     @GET("yuma/location/query/user/677d3c5b-14de-4e38-a767-9678fc2f5c9d/last")
     Call<ArrayList<Vehicle>> getVehicleLocationData(
             @Header("Content-Type") String contentType,
-            @Header("YumaSession") String sessionID,
-            @Query("Lon") double lat,
-            @Query("lat") double lon,
-            @Query("heading") double heading,
-            @Query("Speed") double speed,
-            @Query("location_name") String location_name
+            @Header("YumaSession") String sessionID
+            //@Query("Lon") double lat,
+            //@Query("lat") double lon,
+            //@Query("heading") double heading,
+            //@Query("Speed") double speed,
+            //@Query("location_name") String location_name
     );
 
     @POST ("yuma/access/login")
