@@ -115,7 +115,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             }
         });
 
-        //getVehicleLocationData(myLatLng,heading,speed,location_name);
+        getVehicleLocationData(myLatLng,heading,speed,location_name);
 
         currentLocationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -192,6 +192,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                         gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(vehicleLatLng, 15));
                         gMap.addMarker(new MarkerOptions()
                                 .position(vehicleLatLng)
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.carmarkerresize))
                                 .title(currentVehicle.getDescription())
                                 .rotation(currentVehicle.getHeading()));
                         lastActiveTV.setText(currentVehicle.getLast_timestamp());
