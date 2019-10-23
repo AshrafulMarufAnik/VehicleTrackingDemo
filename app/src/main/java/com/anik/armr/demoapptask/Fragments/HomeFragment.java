@@ -13,36 +13,68 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
+import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.anik.armr.demoapptask.Interface.RetrofitInterface;
+import com.anik.armr.demoapptask.ModelClass.Vehicle;
 import com.anik.armr.demoapptask.R;
+import com.anik.armr.demoapptask.RetrofitAPIClient.ApiClientInstance;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+import static androidx.constraintlayout.widget.Constraints.TAG;
+
 public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private View view;
+    private BottomSheetBehavior bottomSheetBehavior;
+    private Button BTN1,BTN2;
+    private TextView lastActiveTV,descriptionTV,speedTV,engineTV,gpsTV,gpsStatusTV,gsmTV,locationNameTV;
+    private ImageView carMarker;
+    private FloatingActionButton currentLocationFAB;
     private GoogleMap gMap;
     private String setLocationAddress;
+    private RetrofitInterface retrofitInterface;
+    private final Handler handler = new Handler();
+    private Runnable runnable;
+    private final int delay_time = 30000;
+    private LatLng myLatLng;
+    private double speed,heading,lat,lon;
+    private String location_name;
 
     public HomeFragment() {
         // Required empty public constructor
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_home, container, false);
@@ -50,29 +82,126 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map_container);
         mapFragment.getMapAsync(this);
 
+        View bottomSheet = view.findViewById(R.id.bottom_sheet);
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+        FusedLocationProviderClient fusedLocationProviderClient = new FusedLocationProviderClient(getActivity());
+        if (getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                getActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(getContext(), "Please enable permissions", Toast.LENGTH_SHORT).show();
+        }
+        final Task<Location> myLocation = fusedLocationProviderClient.getLastLocation();
+        myLocation.addOnCompleteListener(new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                if(task.isSuccessful()){
+                    Location location = task.getResult();
+                    myLatLng = new LatLng(location.getLatitude(),location.getLongitude());
+                    speed = location.getSpeed();
+                    heading = location.getBearing();
+                    location_name = getAddress(location.getLatitude(),location.getLongitude());
+                    //getVehicleLocationData(myLatLng,heading,speed,location_name);
+                }
+            }
+        });
+
+        currentLocationFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getCurrentLocation();
+            }
+        });
+
+        carMarker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED){
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                }
+                else {
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                }
+            }
+        });
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        handler.postDelayed(runnable = new Runnable(){
+            public void run(){
+                getVehicleLocationData(myLatLng,heading,speed,location_name);
+                handler.postDelayed(runnable, delay_time);
+            }
+        }, delay_time);
+
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        handler.removeCallbacks(runnable);
+        super.onPause();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onMapReady(GoogleMap googleMap) {
         gMap = googleMap;
+
         if (getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 getActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(getContext(), "Please Enable Permissions", Toast.LENGTH_SHORT).show();
             return;
         }
         googleMap.setMyLocationEnabled(true);
-        //googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+        googleMap.getUiSettings().setMyLocationButtonEnabled(false);
         googleMap.getUiSettings().setCompassEnabled(true);
-        
-        getCurrentLocation();
+    }
+
+    private void getVehicleLocationData(LatLng myLatLng, double heading, double speed, String location_name) {
+        retrofitInterface = new ApiClientInstance().getInstance().getApiData();
+
+        Call<Vehicle> call = retrofitInterface.getVehicleLocationData(myLatLng.latitude,myLatLng.longitude,heading,speed,location_name);
+        call.enqueue(new Callback<Vehicle>() {
+            @Override
+            public void onResponse(Call<Vehicle> call, Response<Vehicle> response) {
+                if(response.isSuccessful()){
+                    Vehicle currentVehicle = response.body();
+                    LatLng vehicleLatLng = new LatLng(Double.parseDouble(currentVehicle.getLat()),Double.parseDouble(currentVehicle.getLon()));
+                    gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(vehicleLatLng,15));
+                    gMap.addMarker(new MarkerOptions()
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_directions_car_black_24dp))
+                            .position(vehicleLatLng)
+                            .title(currentVehicle.getLocationName())
+                            .rotation(currentVehicle.getHeading())
+                            .snippet(currentVehicle.getDescription()));
+                    lastActiveTV.setText(currentVehicle.getLastTimestamp());
+                    descriptionTV.setText(currentVehicle.getDescription());
+                    speedTV.setText(currentVehicle.getSpeed());
+                    engineTV.setText(currentVehicle.getEngine());
+                    gsmTV.setText(currentVehicle.getGsmSignal());
+                    gpsStatusTV.setText(currentVehicle.getGpsSignal());
+                    gpsStatusTV.setText(currentVehicle.getGpsSattelites());
+                    setLocationAddress = getAddress(Double.parseDouble(currentVehicle.getLat()),Double.parseDouble(currentVehicle.getLon()));
+                    locationNameTV.setText(currentVehicle.getLocationName());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Vehicle> call, Throwable t) {
+                Toast.makeText(getContext(),t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onFailure: "+t.getMessage());
+            }
+        });
 
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void getCurrentLocation() {
+        carMarker.setVisibility(View.GONE);
         FusedLocationProviderClient fusedLocationProviderClient = new FusedLocationProviderClient(getActivity());
         if (getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 getActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -119,6 +248,14 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void init(View view) {
-
+        currentLocationFAB = view.findViewById(R.id.currentLocationFAB);
+        carMarker = view.findViewById(R.id.carMarkerIV);
+        lastActiveTV = view.findViewById(R.id.vehicle_last_active);
+        descriptionTV = view.findViewById(R.id.vehicle_description);
+        speedTV = view.findViewById(R.id.speedTV);
+        engineTV = view.findViewById(R.id.engineStatusTV);
+        gpsTV = view.findViewById(R.id.gpsSatellitesTV);
+        gpsStatusTV = view.findViewById(R.id.gpsPositioningTV);
+        gsmTV = view.findViewById(R.id.GsmSignalTV);
     }
 }
