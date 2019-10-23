@@ -58,8 +58,8 @@ import static androidx.constraintlayout.widget.Constraints.TAG;
 public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private View view;
     private BottomSheetBehavior bottomSheetBehavior;
-    private Button BTN1,BTN2;
-    private TextView lastActiveTV,descriptionTV,speedTV,engineTV,gpsTV,gpsStatusTV,gsmTV,locationNameTV;
+    private Button BTN1, BTN2;
+    private TextView lastActiveTV, descriptionTV, speedTV, engineTV, gpsTV, gpsStatusTV, gsmTV, locationNameTV;
     private ImageView carMarker;
     private FloatingActionButton currentLocationFAB;
 
@@ -75,7 +75,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private final int delay_time = 30000;
 
     private LatLng myLatLng;
-    private double speed,heading,lat,lon;
+    private double speed, heading, lat, lon;
     private String location_name;
     private ArrayList<Vehicle> vehicleList;
 
@@ -104,12 +104,12 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         myLocation.addOnCompleteListener(new OnCompleteListener<Location>() {
             @Override
             public void onComplete(@NonNull Task<Location> task) {
-                if(task.isSuccessful()){
+                if (task.isSuccessful()) {
                     Location location = task.getResult();
-                    myLatLng = new LatLng(location.getLatitude(),location.getLongitude());
+                    myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                     speed = location.getSpeed();
                     heading = location.getBearing();
-                    location_name = getAddress(location.getLatitude(),location.getLongitude());
+                    location_name = getAddress(location.getLatitude(), location.getLongitude());
                     //getVehicleLocationData(myLatLng,heading,speed,location_name);
                 }
             }
@@ -127,9 +127,9 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
     @Override
     public void onResume() {
-        handler.postDelayed(runnable = new Runnable(){
-            public void run(){
-                getVehicleLocationData(myLatLng,heading,speed,location_name);
+        handler.postDelayed(runnable = new Runnable() {
+            public void run() {
+                //getVehicleLocationData(myLatLng, heading, speed, location_name);
                 handler.postDelayed(runnable, delay_time);
             }
         }, delay_time);
@@ -156,14 +156,14 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         googleMap.setMyLocationEnabled(true);
         googleMap.getUiSettings().setMyLocationButtonEnabled(false);
         googleMap.getUiSettings().setCompassEnabled(true);
+        getCurrentLocation();
 
         gMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                if(bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED){
+                if (bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                }
-                else {
+                } else {
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 }
 
@@ -175,42 +175,43 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private void getVehicleLocationData(LatLng myLatLng, double heading, double speed, String location_name) {
         retrofitInterface = new ApiClientInstance().getInstance().getApiData();
 
-        Call<ArrayList<Vehicle>> call = retrofitInterface.getVehicleLocationData(CONTENT_TYPE,SESSION_ID,myLatLng.latitude,myLatLng.longitude,heading,speed,location_name);
+        Call<ArrayList<Vehicle>> call = retrofitInterface.getVehicleLocationData(CONTENT_TYPE, SESSION_ID, myLatLng.latitude, myLatLng.longitude, heading, speed, location_name);
         call.enqueue(new Callback<ArrayList<Vehicle>>() {
             @Override
             public void onResponse(Call<ArrayList<Vehicle>> call, Response<ArrayList<Vehicle>> response) {
-                if(call.isExecuted()){
-                    if(response.isSuccessful()){
-                        vehicleList = response.body();
-                        int listSize = vehicleList.size();
-                        int i = 0;
-                        while (i<listSize){
-                            Vehicle currentVehicle = vehicleList.get(i);
-                            LatLng vehicleLatLng = new LatLng(Double.parseDouble(currentVehicle.getLat()),Double.parseDouble(currentVehicle.getLon()));
-                            gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(vehicleLatLng,15));
-                            gMap.addMarker(new MarkerOptions()
-                                    .position(vehicleLatLng)
-                                    .title(currentVehicle.getLocationName())
-                                    .rotation(currentVehicle.getHeading())
-                                    .snippet(currentVehicle.getDescription()));
-                            lastActiveTV.setText(currentVehicle.getLastTimestamp());
-                            descriptionTV.setText(currentVehicle.getDescription());
-                            speedTV.setText(currentVehicle.getSpeed());
-                            engineTV.setText(currentVehicle.getEngine().toString());
-                            //gsmTV.setText(currentVehicle.getGsmSignal().toString());
-                            gpsStatusTV.setText(currentVehicle.getGpsSignal().toString());
-                            gpsStatusTV.setText(currentVehicle.getGpsSattelites().toString());
-                            setLocationAddress = getAddress(Double.parseDouble(currentVehicle.getLat()),Double.parseDouble(currentVehicle.getLon()));
-                            locationNameTV.setText(currentVehicle.getLocationName());
+                if (response.isSuccessful()) {
+                    vehicleList = response.body();
+                    int listSize = vehicleList.size();
+                    int i = 0;
+                    while (i < listSize) {
+                        Vehicle currentVehicle = vehicleList.get(i);
+                        //LatLng vehicleLatLng = new LatLng(Double.parseDouble(currentVehicle.getLat()), Double.parseDouble(currentVehicle.getLon()));
+                        //gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(vehicleLatLng, 15));
+                        //gMap.addMarker(new MarkerOptions()
+                                //.position(vehicleLatLng)
+                                //.title(currentVehicle.getLocationName())
+                                //.rotation(currentVehicle.getHeading())
+                                //.snippet(currentVehicle.getDescription()));
+                        //lastActiveTV.setText(currentVehicle.getLastTimestamp());
+                        //descriptionTV.setText(currentVehicle.getDescription());
+                        //speedTV.setText(currentVehicle.getSpeed());
+                        //engineTV.setText(currentVehicle.getEngine().toString());
+                        //gsmTV.setText(currentVehicle.getGsmSignal().toString());
+                        //gpsStatusTV.setText(currentVehicle.getGpsSignal().toString());
+                        //gpsStatusTV.setText(currentVehicle.getGpsSattelites().toString());
+                        //setLocationAddress = getAddress(Double.parseDouble(currentVehicle.getLat()), Double.parseDouble(currentVehicle.getLon()));
+                        //locationNameTV.setText(currentVehicle.getLocationName());
 
-                        }
                     }
+                } else {
+                    Toast.makeText(getContext(), "Data parsing problem", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ArrayList<Vehicle>> call, Throwable t) {
-
+                Toast.makeText(getContext(), "ERROR: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onFailure: " + t.getMessage());
             }
         });
 
@@ -219,6 +220,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void getCurrentLocation() {
         carMarker.setVisibility(View.GONE);
+        gMap.clear();
         FusedLocationProviderClient fusedLocationProviderClient = new FusedLocationProviderClient(getActivity());
         if (getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 getActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -226,24 +228,24 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         }
 
         Task location = fusedLocationProviderClient.getLastLocation();
-        if(location != null){
+        if (location != null) {
             location.addOnCompleteListener(new OnCompleteListener() {
                 @Override
                 public void onComplete(@NonNull Task task) {
-                    if(task.isSuccessful()){
+                    if (task.isSuccessful()) {
                         Location currentLocation = (Location) task.getResult();
-                        LatLng latLng = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
-                        gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
-                        gMap.addMarker(new MarkerOptions().position(latLng).title(getAddress(currentLocation.getLatitude(),currentLocation.getLongitude())).snippet("Your Location"));
+                        LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                        gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+                        gMap.addMarker(new MarkerOptions().position(latLng).title(getAddress(currentLocation.getLatitude(), currentLocation.getLongitude())).snippet("Your Location"));
                         gMap.addCircle(new CircleOptions().center(latLng));
-                        setLocationAddress = getAddress(currentLocation.getLatitude(),currentLocation.getLongitude());
+                        setLocationAddress = getAddress(currentLocation.getLatitude(), currentLocation.getLongitude());
                     }
                 }
             });
         }
     }
 
-    public String getAddress(double lat,double lng){
+    public String getAddress(double lat, double lng) {
         String address = "";
 
         Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
@@ -251,8 +253,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         List<Address> addressList;
 
         try {
-            addressList = geocoder.getFromLocation(lat,lng,1);
-            if(addressList.size()>0){
+            addressList = geocoder.getFromLocation(lat, lng, 1);
+            if (addressList.size() > 0) {
                 address = addressList.get(0).getAddressLine(0);
             }
 
